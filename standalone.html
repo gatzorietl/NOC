@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REPLY.AI | Smart Template Composer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .animate-float { animation: float 3s infinite ease-in-out; }
+        .tone-btn.active { border-color: currentColor; background: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transform: scale(1.05); color: #1e293b; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <div id="app">
+        <nav class="glass sticky top-0 z-50 border-b border-slate-200 px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div id="nav-icon" class="p-2 rounded-lg text-white bg-slate-800 animate-float">
+                    <i data-lucide="zap" class="w-5 h-5"></i>
+                </div>
+                <h1 class="font-black tracking-tighter text-slate-800 text-xl">REPLY.AI</h1>
+            </div>
+            <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">v1.2 Offline Engine</div>
+        </nav>
+
+        <main class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <!-- Sidebar -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 space-y-8">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Firma Organizzazione</label>
+                        <input id="responderName" type="text" placeholder="Il Team IT" class="w-full px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-slate-200 outline-none font-bold">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Tono Workspace</label>
+                        <div class="grid grid-cols-2 gap-2" id="tone-selector">
+                            <button data-tone="Professional" class="tone-btn active py-3 rounded-xl border-2 border-transparent bg-slate-50 text-slate-400 text-[10px] font-black uppercase">Professional</button>
+                            <button data-tone="Friendly" class="tone-btn py-3 rounded-xl border-2 border-transparent bg-slate-50 text-slate-400 text-[10px] font-black uppercase">Friendly</button>
+                            <button data-tone="Casual" class="tone-btn py-3 rounded-xl border-2 border-transparent bg-slate-50 text-slate-400 text-[10px] font-black uppercase">Casual</button>
+                            <button data-tone="Apologetic" class="tone-btn py-3 rounded-xl border-2 border-transparent bg-slate-50 text-slate-400 text-[10px] font-black uppercase">Apologetic</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Intento (Opzionale)</label>
+                        <textarea id="topic" placeholder="Descrivi brevemente l'argomento..." class="w-full h-24 px-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-slate-200 outline-none resize-none text-sm"></textarea>
+                    </div>
+
+                    <button id="generate-btn" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase text-xs shadow-lg flex items-center justify-center gap-2 hover:bg-black transition-all">
+                        <i data-lucide="layout" class="w-4 h-4"></i> Genera Bozza
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="lg:col-span-8">
+                <div id="empty-state" class="h-full min-h-[400px] flex flex-col items-center justify-center border-4 border-dashed border-slate-200 rounded-[3rem] bg-white/40">
+                    <i data-lucide="sparkles" class="w-16 h-16 text-slate-200"></i>
+                    <p class="text-slate-400 font-bold mt-4">Seleziona un tono e genera la tua bozza professionale.</p>
+                </div>
+
+                <div id="results-state" class="hidden space-y-10 animate-in fade-in duration-500">
+                    <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden">
+                        <div id="draft-container" class="p-10 md:p-16 space-y-8 font-serif text-slate-800 transition-colors">
+                            <p class="font-bold text-xl" id="res-greeting">Dear Partner,</p>
+                            <p class="text-xl md:text-2xl leading-relaxed whitespace-pre-wrap" id="res-body"></p>
+                            <p class="italic font-sans text-base text-slate-500" id="res-thanks"></p>
+                            <div class="pt-8 border-t border-slate-50">
+                                <p class="font-bold" id="res-closing">Best regards,</p>
+                                <p class="font-sans font-black uppercase tracking-widest text-xs mt-1 text-slate-600" id="res-signature"></p>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-slate-50 flex justify-end">
+                            <button id="copy-btn" class="px-8 py-4 bg-slate-900 text-white rounded-xl font-black uppercase text-xs hover:bg-black transition-all flex items-center gap-2">
+                                <i data-lucide="copy" class="w-4 h-4"></i> Copia Bozza
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-4">Altre Variazioni</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="variations-container"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Template Library ---
+        const templates = {
+            Professional: {
+                bodies: [
+                    "We are writing to formally follow up on our previous discussion regarding the upcoming project milestones. We would like to ensure that all objectives are aligned with our strategic goals.",
+                    "We are pleased to share the latest updates concerning our collaboration. Our team has been working diligently to refine the process and we look forward to your feedback.",
+                    "Following our recent meeting, we have outlined the necessary steps to move forward with the implementation phase. We believe this approach will maximize our collective efficiency."
+                ],
+                thanks: [
+                    "We appreciate your continued partnership and support.",
+                    "Thank you for your prompt attention to this matter.",
+                    "We value your expertise and look forward to our next steps."
+                ],
+                closings: ["Best regards", "Sincerely", "Kind regards"]
+            },
+            Friendly: {
+                bodies: [
+                    "We wanted to reach out and see how things are going on your end. We've been making some great progress and thought it would be a good time to sync up.",
+                    "It's been a pleasure working together lately! We're really excited about the direction we're heading and wanted to share some quick thoughts with you.",
+                    "We hope you're having a great week. We've just finished reviewing the latest draft and we're very happy with the results so far."
+                ],
+                thanks: [
+                    "Thanks for being such a great partner to work with.",
+                    "We really appreciate all your help on this.",
+                    "Looking forward to catching up soon!"
+                ],
+                closings: ["Best", "Warmly", "Cheers"]
+            },
+            Casual: {
+                bodies: [
+                    "Just checking in to see if you had any thoughts on what we discussed. We're ready to jump into the next phase whenever you are!",
+                    "Hey! We've got some cool updates to share. Let us know when you have a few minutes to chat about the next steps.",
+                    "We're moving right along with the plan. Everything seems to be clicking into place, and we're stoked to see the final result."
+                ],
+                thanks: [
+                    "Thanks for keeping things moving!",
+                    "Appreciate the quick turnaround.",
+                    "Talk soon!"
+                ],
+                closings: ["Talk soon", "Best", "Cheers"]
+            },
+            Apologetic: {
+                bodies: [
+                    "We would like to sincerely apologize for the delay in our response. We are currently addressing some internal challenges and appreciate your patience during this time.",
+                    "We regret any inconvenience caused by the recent changes to our schedule. We are doing our best to resolve the situation as quickly as possible.",
+                    "Please accept our apologies for the oversight in our last communication. We have taken steps to ensure this does not happen again."
+                ],
+                thanks: [
+                    "Thank you for your understanding and patience.",
+                    "We appreciate your flexibility in this matter.",
+                    "Thanks for bearing with us."
+                ],
+                closings: ["Sincerely", "With apologies", "Best regards"]
+            }
+        };
+
+        const themes = {
+            Professional: { bg: '#f8fafc', accent: 'slate', gradient: 'from-slate-600 to-slate-800' },
+            Friendly: { bg: '#f0fdf4', accent: 'emerald', gradient: 'from-emerald-500 to-green-700' },
+            Casual: { bg: '#fff7ed', accent: 'orange', gradient: 'from-orange-500 to-red-700' },
+            Apologetic: { bg: '#f5f3ff', accent: 'violet', gradient: 'from-violet-500 to-indigo-700' }
+        };
+
+        // --- State ---
+        let currentTone = 'Professional';
+
+        // --- Init ---
+        lucide.createIcons();
+        const nameInput = document.getElementById('responderName');
+        const topicInput = document.getElementById('topic');
+        const generateBtn = document.getElementById('generate-btn');
+        const emptyState = document.getElementById('empty-state');
+        const resultsState = document.getElementById('results-state');
+        const variationsContainer = document.getElementById('variations-container');
+        const copyBtn = document.getElementById('copy-btn');
+
+        nameInput.value = localStorage.getItem('reply_ai_name') || '';
+
+        // --- Events ---
+        document.querySelectorAll('.tone-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTone = btn.dataset.tone;
+                
+                const theme = themes[currentTone];
+                document.body.style.backgroundColor = theme.bg;
+                document.getElementById('nav-icon').className = `p-2 rounded-lg text-white bg-gradient-to-br ${theme.gradient} animate-float`;
+            });
+        });
+
+        generateBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim() || '[The Team]';
+            localStorage.setItem('reply_ai_name', name);
+
+            const data = templates[currentTone];
+            
+            // Pick random indices for variety
+            const bodyIdx = Math.floor(Math.random() * data.bodies.length);
+            const thanksIdx = Math.floor(Math.random() * data.thanks.length);
+            const closingIdx = Math.floor(Math.random() * data.closings.length);
+            
+            // Show Results
+            emptyState.classList.add('hidden');
+            resultsState.classList.remove('hidden');
+            
+            // Initial Selection (Randomized)
+            updateDraft(data.bodies[bodyIdx], data.thanks[thanksIdx], data.closings[closingIdx], name);
+
+            // Render Variations (Shuffled)
+            variationsContainer.innerHTML = '';
+            const shuffledBodies = [...data.bodies].sort(() => Math.random() - 0.5);
+            
+            shuffledBodies.forEach((b, i) => {
+                const card = document.createElement('button');
+                card.className = 'p-6 rounded-2xl border-2 border-transparent bg-white hover:border-slate-200 text-left text-xs font-bold transition-all shadow-sm hover:shadow-md';
+                card.innerText = b;
+                
+                // If this is the one we picked for the main draft, highlight it
+                if (b === data.bodies[bodyIdx]) {
+                    card.classList.add('border-slate-800', 'shadow-lg');
+                }
+
+                card.onclick = () => {
+                    const t = data.thanks[Math.floor(Math.random() * data.thanks.length)];
+                    const c = data.closings[Math.floor(Math.random() * data.closings.length)];
+                    updateDraft(b, t, c, name);
+                    document.querySelectorAll('#variations-container button').forEach(el => el.classList.remove('border-slate-800', 'shadow-lg'));
+                    card.classList.add('border-slate-800', 'shadow-lg');
+                };
+                variationsContainer.appendChild(card);
+            });
+        });
+
+        function updateDraft(body, thanks, closing, name) {
+            document.getElementById('res-body').innerText = body;
+            document.getElementById('res-thanks').innerText = thanks;
+            document.getElementById('res-closing').innerText = closing + ",";
+            document.getElementById('res-signature').innerText = name;
+        }
+
+        copyBtn.addEventListener('click', () => {
+            const text = `Dear Partner,\n\n${document.getElementById('res-body').innerText}\n\n${document.getElementById('res-thanks').innerText}\n\n${document.getElementById('res-closing').innerText}\n${document.getElementById('res-signature').innerText}`;
+            navigator.clipboard.writeText(text);
+            copyBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Copiato!';
+            lucide.createIcons();
+            setTimeout(() => {
+                copyBtn.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i> Copia Bozza';
+                lucide.createIcons();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
